@@ -28,13 +28,14 @@ class BurgerBuilder extends Component {
 
     componentDidMount() {
         axios.get('https://burger-builder-e7728.firebaseio.com/ingredients.json')
-            .then( response => {
-                this.setState( { ingredients: response.data } );
-            } )
-            .catch( error => {
-                this.setState( { error: true } );
-            } );
+            .then(response => {
+                this.setState({ingredients: response.data});
+            })
+            .catch(error => {
+                this.setState({error: true});
+            });
     }
+
     updatePurchaseState(ingredients) {
         const sum = Object.keys(ingredients).map(igKey => {
             return ingredients[igKey];
@@ -86,28 +87,39 @@ class BurgerBuilder extends Component {
 
     purchaseContinueHandler = () => {
         // alert('You Continue');
-        this.setState({loading: true});
-        const order = {
-            ingredients: this.state.ingredients,
-            price: this.state.totalPrice,
-            customer: {
-                name: 'Adam Morsi',
-                address: {
-                    street: 'Teststreet 1',
-                    zipCode: '42315',
-                    country: 'Cyprus'
-                },
-                email: 'test@test.com'
-            },
-            deliveryMethod: 'fastest'
-        };
-        axios.post('/orders.json', order)
-            .then(response => {
-                this.setState({loading: false, purchasing: false});
-            })
-            .catch(error => {
-                this.setState({loading: false, purchasing: false});
-            })
+        /* this.setState({loading: true});
+         const order = {
+             ingredients: this.state.ingredients,
+             price: this.state.totalPrice,
+             customer: {
+                 name: 'Adam Morsi',
+                 address: {
+                     street: 'Teststreet 1',
+                     zipCode: '42315',
+                     country: 'Cyprus'
+                 },
+                 email: 'test@test.com'
+             },
+             deliveryMethod: 'fastest'
+         };
+         axios.post('/orders.json', order)
+             .then(response => {
+                 this.setState({loading: false, purchasing: false});
+             })
+             .catch(error => {
+                 this.setState({loading: false, purchasing: false});
+             })*/
+        const queryParams = [];
+        for (let i in this.state.ingredients) {
+            queryParams.push(encodeURIComponent(i) + '=' + encodeURIComponent(this.state.ingredients[i]));
+        }
+
+        const queryString = queryParams.join('&');
+        this.props.history.push(
+            {
+                pathname: '/checkout',
+                search: '?' + queryString
+            });
     };
 
     render() {
@@ -122,7 +134,7 @@ class BurgerBuilder extends Component {
         let orderSummary = null;
         let burger = this.state.error ? <p>Ingredients can't be loaded</p> : <Spinner/>;
 
-        if(this.state.ingredients){
+        if (this.state.ingredients) {
             burger = (
                 <Aux>
                     <Burger ingredients={this.state.ingredients}/>
